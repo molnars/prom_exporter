@@ -5,11 +5,12 @@ import requests
 import time #import sleep
 from datetime import datetime
 import subprocess
+import platform
 #from http.server import BaseHTTPRequestHandler, HTTPServer
 from prometheus_client import CollectorRegistry, start_http_server, Gauge, Histogram
 
 registry = CollectorRegistry()
-inotify_handle_count = Gauge("inotify_handle_total", "total count of process inotify handles" ) #, registry=registry)   #, ["inotify_count"],[""])
+inotify_handle_count = Gauge("inotify_handle_total", "total count of process inotify handles",["node"] ) #, registry=registry)   #, ["inotify_count"],[""])
 #hitl_psql_health_request_time = Histogram('hitl_psql_health_request_time', 'PSQL connection response time (seconds)')
 
 def plog(severity, message, value):
@@ -20,7 +21,8 @@ def get_metrics():
    iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
    #print(now.strftime("%d/%m/%Y %H:%M:%S"), " [INFO] inotify_handle_total: ", iTotal)
    plog("INFO","inotify_handle_total", iTotal)
-   inotify_handle_count.set(iTotal)
+#   inotify_handle_count.set(iTotal,["Node"])
+   inotify_handle_count.labels(node=platform.node()).set(iTotal)
             
             
 if __name__ == '__main__':
@@ -30,7 +32,8 @@ if __name__ == '__main__':
     
     plog('INFO',"Collection starting","")
     plog('INFO',"Frequency set at", freq)
-    inotify_handle_count.set(-1)    
+#    inotify_handle_count.set(-1)    
+    inotify_handle_count.labels(node=platform.node()).set(-1)
     while True:
         get_metrics()
         time.sleep(freq)
