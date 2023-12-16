@@ -17,7 +17,7 @@ def plog(severity, message, value):
     
 def get_metrics():
 #   inotify_handle_count.set(
-   iTotal=subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True)
+   iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
    #print(now.strftime("%d/%m/%Y %H:%M:%S"), " [INFO] inotify_handle_total: ", iTotal)
    plog("INFO","inotify_handle_total", iTotal)
    inotify_handle_count.set(iTotal)
@@ -26,7 +26,7 @@ def get_metrics():
 if __name__ == '__main__':
     start_http_server(9000)
 #    webServer = HTTPServer(("localhost", 9000), HTTPRequestHandler).serve_forever()
-    freq = os.environ.get('frequency', 60)
+    freq = int(os.environ.get('frequency', 60))
     
     plog('INFO',"Collection starting","")
     plog('INFO',"Frequency set at", freq)
