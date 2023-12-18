@@ -31,7 +31,7 @@ def get_metrics():
    result=re.sub('\x1b\[[0-9;]*[mGKHF]','',subprocess.check_output('./inotify-info | egrep "Total inotify|max_user"', shell=True, text=True))
    plog("DEBUG","inotify-info", result)
 # TODO:
-   match = re.search('Total inotify Instances:\s+(\d.)', result, re.IGNORECASE)
+   match = re.search('Total inotify Instances:\s+(\d*)', result, re.IGNORECASE)
    if match:
       iTotal = int(match.group(1))
       plog("INFO","inotify_user_instance_total", iTotal)
@@ -39,7 +39,7 @@ def get_metrics():
 
 
 # TODO: 
-   match = re.search('Total inotify Watches:\s+(\d.)', result, re.IGNORECASE)
+   match = re.search('Total inotify Watches:\s+(\d*)', result, re.IGNORECASE)
    if match:
       iwTotal = int(match.group(1))
       plog("INFO","inotify_user_watch_total", iwTotal)
