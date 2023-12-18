@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-alerts
+  namespace: inotify
+spec:
+  groups:
+  - name: inotify-alerts
+    rules:
+    - alert: inotify-metric-debug
+      expr: inotify_metric_debug==1
+      for: 5s
+      labels:
+        app: inotify-info
+        severity: critical
+      annotations:
+        description: 'DEBUG test'
