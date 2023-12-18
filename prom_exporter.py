@@ -6,6 +6,7 @@ import time #import sleep
 from datetime import datetime
 import subprocess
 import platform
+import re
 #from http.server import BaseHTTPRequestHandler, HTTPServer
 from prometheus_client import CollectorRegistry, start_http_server, Gauge, Histogram
 
@@ -21,20 +22,30 @@ def plog(severity, message, value):
     print(datetime.now().strftime("%d/%m/%Y %H:%M:%S"),'[',severity.upper(),']',message,":", value)
     
 def get_metrics():
+   iTotal=-1
+   iwTotal=-1
 #   inotify_handle_count.set(
 # TODO: improve
-   iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
+   #iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
+   plog("DEBUG","pwd",subprocess.check_output('pwd', shell=True, text=True))
+   result=re.sub('\x1b\[[0-9;]*[mGKHF]','',subprocess.check_output('./inotify-info | egrep "Total inotify|max_user"', shell=True, text=True))
+   plog("DEBUG","inotify-info", result)
 # TODO:
-   plog("INFO","inotify_user_instance_total", iTotal)
-   inotify_instance_count.labels(instance=platform.node()).set(iTotal)
-
-# TODO: this does not work as expected
-   iwTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
-#   plog("INFO","inotify_user_watch_total", iwTotal)
-#   inotify_watch_count.labels(instance=platform.node()).set(iwTotal)
+   match = re.search('Total inotify Instances:\s+(\d.)', result, re.IGNORECASE)
+   if match:
+      iTotal = int(match.group(1))
+      plog("INFO","inotify_user_instance_total", iTotal)
+      inotify_instance_count.labels(instance=platform.node()).set(iTotal)
 
 
-#/proc/sys/fs/inotify/max_user_watches
+# TODO: 
+   match = re.search('Total inotify Watches:\s+(\d.)', result, re.IGNORECASE)
+   if match:
+      iwTotal = int(match.group(1))
+      plog("INFO","inotify_user_watch_total", iwTotal)
+      inotify_watch_count.labels(instance=platform.node()).set(iwTotal)
+
+
    with open('/proc/sys/fs/inotify/max_user_instances') as f:
      max_user_instances = int(f.read())
    plog("INFO","inotify_max_user_instances",max_user_instances)
@@ -47,12 +58,10 @@ def get_metrics():
             
 if __name__ == '__main__':
     start_http_server(9000)
-#    webServer = HTTPServer(("localhost", 9000), HTTPRequestHandler).serve_forever()
     freq = int(os.environ.get('frequency', 60))
     
     plog('INFO',"Collection starting",platform.node())
     plog('INFO',"Frequency set at", freq)
-#    inotify_watch_count.set(-1)    
     inotify_watch_count.labels(instance=platform.node()).set(-1)
     inotify_watch_max.labels(instance=platform.node()).set(-1)
     inotify_instance_count.labels(instance=platform.node()).set(-1)
