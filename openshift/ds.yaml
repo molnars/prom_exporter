@@ -8,7 +8,6 @@ metadata:
     app.openshift.io/vcs-uri: 'https://github.com/molnars/prom_exporter.git'
     image.openshift.io/triggers: >-
       [{"from":{"kind":"ImageStreamTag","name":"prom-exporter:latest","namespace":"inotify"},"fieldPath":"spec.template.spec.containers[?(@.name==\"prom-exporter\")].image","pause":"false"}]
-    openshift.io/generated-by: OpenShiftWebConsole
   name: prom-exporter
   namespace: inotify
   labels:
@@ -17,27 +16,23 @@ metadata:
     app.kubernetes.io/instance: prom-exporter
     app.kubernetes.io/name: prom-exporter
     app.openshift.io/runtime: python
-    app.openshift.io/runtime-version: 3.9-ubi8
+    app.openshift.io/runtime-version: 3.9-ubi9
 spec:
   selector:
     matchLabels:
       app: prom-exporter
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: prom-exporter
         deployment: prom-exporter
     spec:
-      volumes:
-        - name: sys
-          hostPath:
-            path: /sys
-            type: ''
-        - name: root
-          hostPath:
-            path: /
-            type: ''
+      restartPolicy: Always
+      hostPID: true
+      schedulerName: default-scheduler
+      hostNetwork: true
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
       containers:
         - resources:
             requests:
@@ -50,6 +45,8 @@ spec:
               value: prom_exporter.py
             - name: frequency
               value: '60'
+            - name: DEBUG
+              value: 'false'
           securityContext:
             privileged: true
             runAsUser: 0
@@ -57,22 +54,22 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: true
           ports:
-            - containerPort: 9000
+            - hostPort: 9000
+              containerPort: 9000
               protocol: TCP
           imagePullPolicy: Always
+          volumeMounts:
+            - name: proc
+              readOnly: true
+              mountPath: /host/proc
+              mountPropagation: HostToContainer
           terminationMessagePolicy: File
           image: >-
-            image-registry.openshift-image-registry.svc:5000/inotify/prom-exporter@sha256:fc927ab392ac8960e1e36171ef1765edbdf7a84dff16ff29f942aecfdae21c43
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
+            image-registry.openshift-image-registry.svc:5000/inotify/prom-exporter@sha256:78e2508c1aae8a0cfe94c91f5ab59a17e571fc9437ad7747f15dd02deaf82727
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+            type: ''
       dnsPolicy: ClusterFirst
-      hostPID: true
-      securityContext: {}
-      schedulerName: default-scheduler
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
-  revisionHistoryLimit: 10
 
