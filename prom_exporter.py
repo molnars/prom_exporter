@@ -22,7 +22,7 @@ def plog(severity, message, value):
     
 def get_metrics():
 #   inotify_handle_count.set(
-$ TODO: improve
+# TODO: improve
    iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
 # TODO:
    plog("INFO","inotify_user_instance_total", iTotal)
