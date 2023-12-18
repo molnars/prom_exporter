@@ -22,14 +22,16 @@ def plog(severity, message, value):
     
 def get_metrics():
 #   inotify_handle_count.set(
+$ TODO: improve
    iTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
+# TODO:
    plog("INFO","inotify_user_instance_total", iTotal)
-#   inotify_instance_count.labels(instance=platform.node()).set(iTotal)
+   inotify_instance_count.labels(instance=platform.node()).set(iTotal)
 
-
+# TODO: this does not work as expected
    iwTotal=int(subprocess.check_output('for foo in /proc/*/fd/*; do readlink -f $foo; done | grep inotify | wc -l', shell=True, text=True))
-   plog("INFO","inotify_user_watch_total", iwTotal)
-   inotify_watch_count.labels(instance=platform.node()).set(iwTotal)
+#   plog("INFO","inotify_user_watch_total", iwTotal)
+#   inotify_watch_count.labels(instance=platform.node()).set(iwTotal)
 
 
 #/proc/sys/fs/inotify/max_user_watches
