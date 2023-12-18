@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 COPY prom_exporter.py /app/prom_exporter.py
 COPY requirements.txt /app/requirements.txt
