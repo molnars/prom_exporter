@@ -1,0 +1,47 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: prom-exporter
+  namespace: inotify
+  labels:
+    app: prom-exporter
+    app.kubernetes.io/component: prom-exporter
+    app.kubernetes.io/instance: prom-exporter
+    app.kubernetes.io/name: prom-exporter
+    app.openshift.io/runtime: python
+    app.openshift.io/runtime-version: 3.9-ubi9
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'prom-exporter:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'python:3.9-ubi9'
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/molnars/prom_exporter.git'
+    contextDir: /
+  triggers:
+    - type: Generic
+      generic:
+        secretReference:
+          name: prom-exporter-generic-webhook-secret
+    - type: GitHub
+      github:
+        secretReference:
+          name: prom-exporter-github-webhook-secret
+    - type: ImageChange
+      imageChange: {}
+    - type: ConfigChange
+  runPolicy: Serial
