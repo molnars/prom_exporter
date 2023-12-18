@@ -8,13 +8,14 @@ import subprocess
 import platform
 import re
 #from http.server import BaseHTTPRequestHandler, HTTPServer
-from prometheus_client import CollectorRegistry, start_http_server, Gauge, Histogram
+from prometheus_client import CollectorRegistry, start_http_server, Gauge, Histogram, Enum
 
 registry = CollectorRegistry()
 inotify_watch_count = Gauge("inotify_user_watch_total", "total count of user inotify watches",["instance"] ) #, registry=registry)   #, ["inotify_count"],[""])
 inotify_watch_max = Gauge("inotify_max_user_watches", "max instances user inotify watches",["instance"] )
 inotify_instance_count = Gauge("inotify_user_instance_total", "total count of user inotify instances",["instance"] ) #, registry=registry)   #, ["inotify_count"],[""])
 inotify_instance_max = Gauge("inotify_max_user_instances", "max instances user inotify instances",["instance"] )
+test = Gauge("inotify_metric_debug","is the debug flag enabled for the prometheus exporter",labelnames=["instance"])
 
 #hitl_psql_health_request_time = Histogram('hitl_psql_health_request_time', 'PSQL connection response time (seconds)')
 
@@ -61,6 +62,8 @@ if __name__ == '__main__':
     
     freq = int(os.environ.get('frequency', 60))
     DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
+    #print("->",DEBUG,"<-")
+    test.labels(instance=platform.node()).set(int(DEBUG))
     inotify_watch_count.labels(instance=platform.node()).set(-1)
     inotify_watch_max.labels(instance=platform.node()).set(-1)
     inotify_instance_count.labels(instance=platform.node()).set(-1)
