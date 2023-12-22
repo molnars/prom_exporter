@@ -8,10 +8,29 @@ spec:
   - name: inotify-alerts
     rules:
     - alert: inotify-metric-debug
+      annotations:
+        description: DEBUG test
       expr: inotify_metric_debug==1
       for: 5s
       labels:
         app: inotify-info
         severity: critical
+    - alert: inotify-metric-soft
       annotations:
-        description: 'DEBUG test'
+        description: inotify watches reached soft limit on {{$labels.pod}}/{{$labels.exported_instance}}
+          (inotify_user_watch_total>=inotify_max_user_watches*0.9)
+        title: inotify watches soft limit
+      expr: inotify_user_watch_total>=inotify_max_user_watches*0.9
+      labels:
+        app: inotify-info
+        severity: warning
+    - alert: inotify-metric-hard
+      annotations:
+        description: inotify watches closing to real limit on {{$labels.pod}}/{{$labels.exported_instance}}
+          (inotify_user_watch_total>=inotify_max_user_watches*0.99)
+        title: inotify watches soft limit
+      expr: inotify_user_watch_total>=inotify_max_user_watches*0.99
+      for: 5s
+      labels:
+        app: inotify-info
+        severity: critical
